@@ -1,29 +1,13 @@
-import { toArrayBuffer, toBase64 } from "~/utils/blob";
-import { sha256 } from "~/utils/hash";
-import client from "~/clients/indexeddb";
-import type { Table } from "dexie";
-import type { Model } from "~/types";
-
-type Signature = Model.File;
-type DB = typeof client & {
-  signatures: Table<Signature, string>;
-};
-
-const db = client as DB;
+import { toArrayBuffer } from "~/utils/blob";
+import { create, generateFileID } from "~/models/file";
+import db from "~/models/indexeddb";
+import type { Signature } from "~/models/types";
 
 db.version(1).stores({
-  signatures: `id, name, file, created_at`,
+  signature: `id, name, file, created_at`,
 });
 
-export async function generateID(file: File): Promise<Signature["id"]> {
-  return sha256(
-    JSON.stringify({
-      name: file.name,
-      file: await toBase64(file),
-      date: file.lastModified,
-    })
-  );
-}
+const generateID = generateFileID("signature");
 
 /**
  * insert one signature into database
@@ -31,10 +15,21 @@ export async function generateID(file: File): Promise<Signature["id"]> {
  * @returns uuid
  */
 export async function insertOne(file: File): Promise<Signature["id"]> {
-  return db.signatures.add({
+  return db.signature.add({
     id: await generateID(file),
+    type: file.type,
     name: file.name,
     file: await toArrayBuffer(file),
     created_at: new Date(file.lastModified),
   });
+}
+
+export async function getByID(id: string): Promise<Signature> {
+  const found = await db.signature.get(id);
+
+  if (!found) throw new Error(`${id} doesn't exist in signature repository`);
+
+  const file = create(found);
+
+  return { ...found, file };
 }

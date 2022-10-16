@@ -1,5 +1,5 @@
 import "fake-indexeddb/auto";
-import client from "~/clients/indexeddb";
+import client from "~/models/indexeddb";
 import upload from "~/features/upload";
 import { render, screen, waitFor } from "@testing-library/react";
 import user from "@testing-library/user-event";

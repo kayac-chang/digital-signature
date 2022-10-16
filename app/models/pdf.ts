@@ -1,28 +1,13 @@
-import { toArrayBuffer, toBase64 } from "~/utils/blob";
-import client from "~/clients/indexeddb";
-import { sha256 } from "~/utils/hash";
-import type { Table } from "dexie";
-import type { Model } from "~/types";
+import { toArrayBuffer } from "~/utils/blob";
+import { generateFileID, create } from "~/models/file";
+import db from "~/models/indexeddb";
+import type { PDF } from "~/models/types";
 
-type PDF = Model.File;
-type DB = typeof client & {
-  pdf: Table<PDF, string>;
-};
-
-const db = client as DB;
 db.version(1).stores({
   pdf: `id, name, file, created_at`,
 });
 
-export async function generateID(file: File): Promise<PDF["id"]> {
-  return sha256(
-    JSON.stringify({
-      name: file.name,
-      file: await toBase64(file),
-      date: file.lastModified,
-    })
-  );
-}
+const generateID = generateFileID("pdf");
 
 /**
  * insert one PDF into database
@@ -32,8 +17,19 @@ export async function generateID(file: File): Promise<PDF["id"]> {
 export async function insertOne(file: File): Promise<PDF["id"]> {
   return db.pdf.add({
     id: await generateID(file),
+    type: "application/pdf",
     name: file.name,
     file: await toArrayBuffer(file),
     created_at: new Date(file.lastModified),
   });
+}
+
+export async function getByID(id: string): Promise<PDF> {
+  const found = await db.pdf.get(id);
+
+  if (!found) throw new Error(`${id} doesn't exist in pdf repository`);
+
+  const file = create(found);
+
+  return { ...found, file };
 }

@@ -1,6 +1,7 @@
 import type { ChangeEvent, DragEvent } from "react";
 import * as Signature from "~/models/signature";
 import * as PDF from "~/models/pdf";
+import { clone } from "~/models/file";
 
 type Event = ChangeEvent | DragEvent;
 
@@ -42,10 +43,25 @@ type FileType = keyof typeof repositories;
  * @param multiple support multiple file upload
  * @returns file uuid in database
  */
-function upload(type: FileType, multiple = false) {
-  return function handle(event: Event): Promise<string | string[]> {
+function upload(
+  type: FileType,
+  multiple?: boolean
+): (event: Event) => Promise<string>;
+function upload(
+  type: FileType,
+  multiple: false
+): (event: Event) => Promise<string>;
+function upload(
+  type: FileType,
+  multiple: true
+): (event: Event) => Promise<string[]>;
+function upload(
+  type: FileType,
+  multiple?: boolean
+): (event: Event) => Promise<string> | Promise<string[]> {
+  return function handle(event) {
     // get files from event
-    const files = getFilesFromEvent(event);
+    const files = getFilesFromEvent(event).map(clone);
 
     // decide which repository should be store
     const repository = repositories[type];

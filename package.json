@@ -37,6 +37,7 @@
     "bcryptjs": "^2.4.3",
     "dexie": "^3.2.2",
     "isbot": "^3.5.3",
+    "pdfjs-dist": "^2.16.105",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tiny-invariant": "^1.2.0"

@@ -17,6 +17,15 @@ export async function toArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
   return readBlob<ArrayBuffer>((reader) => reader.readAsArrayBuffer(blob));
 }
 
+/**
+ * convert file/blob into base64 data url
+ * @param blob a file-like object of immutable, raw data
+ * @returns promise of base64 data url
+ */
+export async function toDataURL(blob: Blob): Promise<string> {
+  return readBlob<string>((reader) => reader.readAsDataURL(blob));
+}
+
 function removeDataURLPrefix(dataurl: string): string {
   return dataurl.replace(/data:.*;base64,/, "");
 }
@@ -27,7 +36,5 @@ function removeDataURLPrefix(dataurl: string): string {
  * @returns promise of base64 string
  */
 export async function toBase64(blob: Blob): Promise<string> {
-  return readBlob<string>((reader) => reader.readAsDataURL(blob)).then(
-    removeDataURLPrefix
-  );
+  return toDataURL(blob).then(removeDataURLPrefix);
 }

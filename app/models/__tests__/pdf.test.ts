@@ -1,21 +1,9 @@
 import "fake-indexeddb/auto";
-import client from "~/clients/indexeddb";
-import { generateID, insertOne } from "~/models/pdf";
+import client from "~/models/indexeddb";
+import { insertOne } from "~/models/pdf";
 import { toArrayBuffer } from "~/utils/blob";
 
 describe("pdf", () => {
-  describe("generateID", () => {
-    test("should be match hash", async () => {
-      const file = new File(["hello"], "foo.pdf", {
-        type: "application/pdf",
-        lastModified: 1,
-      });
-      const hash =
-        "1bc886d262df49e3770dd3b883293416d4bd0f642593289060151acd22f6ae90";
-      expect(await generateID(file)).toBe(hash);
-    });
-  });
-
   describe("insertOne", () => {
     test("should be create one record in db", async () => {
       const file = new File(["hello"], "foo.pdf", {
@@ -23,7 +11,7 @@ describe("pdf", () => {
         lastModified: 1,
       });
       const hash =
-        "1bc886d262df49e3770dd3b883293416d4bd0f642593289060151acd22f6ae90";
+        "b29f29e5a6f42880b83c95e38a2b51c0d8dc4c438df13d39898f97491fac2d89";
 
       await insertOne(file);
 
