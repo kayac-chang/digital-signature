@@ -51,10 +51,10 @@ function upload(type: FileType, multiple = false) {
     const repository = repositories[type];
 
     // save files into repository
-    if (!multiple) {
-      return repository(files[0]);
+    if (multiple) {
+      return Promise.all(files.map(repository));
     }
-    return Promise.all(files.map(repository));
+    return repository(files[0]);
   };
 }
 

@@ -15,12 +15,12 @@ db.version(1).stores({
   signatures: `id, name, file, created_at`,
 });
 
-async function generateID(file: File, date: Date): Promise<Signature["id"]> {
+export async function generateID(file: File): Promise<Signature["id"]> {
   return sha256(
     JSON.stringify({
       name: file.name,
       file: await toBase64(file),
-      date: date.valueOf(),
+      date: file.lastModified,
     })
   );
 }
@@ -32,9 +32,9 @@ async function generateID(file: File, date: Date): Promise<Signature["id"]> {
  */
 export async function insertOne(file: File): Promise<Signature["id"]> {
   return db.signatures.add({
-    id: await generateID(file, new Date()),
+    id: await generateID(file),
     name: file.name,
     file: await toArrayBuffer(file),
-    created_at: new Date(),
+    created_at: new Date(file.lastModified),
   });
 }
