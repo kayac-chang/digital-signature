@@ -1,13 +1,11 @@
 import { toArrayBuffer } from "~/utils/blob";
-import { generateFileID, create } from "~/models/file";
+import { generateID, create } from "~/models/file";
 import db from "~/models/indexeddb";
 import type { PDF } from "~/models/types";
 
 db.version(1).stores({
-  pdf: `id, name, file, created_at`,
+  pdf: `id, name`,
 });
-
-const generateID = generateFileID("pdf");
 
 /**
  * insert one PDF into database
@@ -17,7 +15,7 @@ const generateID = generateFileID("pdf");
 export async function insertOne(file: File): Promise<PDF["id"]> {
   return db.pdf.add({
     id: await generateID(file),
-    type: "application/pdf",
+    type: file.type,
     name: file.name,
     file: await toArrayBuffer(file),
     created_at: new Date(file.lastModified),

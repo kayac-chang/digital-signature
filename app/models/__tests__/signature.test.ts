@@ -11,7 +11,7 @@ describe("signature", () => {
         lastModified: 1,
       });
       const hash =
-        "67e4a3d2854a20696491c8cfa0736201cbbd53519985305580c1c83f8d9b02d6";
+        "c3d81689bdd47f2248fe1f3c42ae07771a839dfcb6b0c4cb876e9133850bd1fe";
 
       await insertOne(file);
 

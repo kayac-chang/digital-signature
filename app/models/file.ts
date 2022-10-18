@@ -2,17 +2,15 @@ import type { Model } from "~/models/types";
 import { sha256 } from "~/utils/hash";
 import { toBase64 } from "~/utils/blob";
 
-export function generateFileID(type: string) {
-  return async function generateID(file: File): Promise<Model.File["id"]> {
-    return sha256(
-      JSON.stringify({
-        type,
-        name: file.name,
-        file: await toBase64(file),
-        date: file.lastModified,
-      })
-    );
-  };
+export async function generateID(file: File): Promise<Model.File["id"]> {
+  return sha256(
+    JSON.stringify({
+      type: file.type,
+      name: file.name,
+      file: await toBase64(file),
+      date: file.lastModified,
+    })
+  );
 }
 
 export function clone(file: File): File {
@@ -22,7 +20,13 @@ export function clone(file: File): File {
   });
 }
 
-export function create(file: Model.File): File {
+interface CreateFileProps {
+  name: string;
+  type: string;
+  created_at: Date;
+  file: File | ArrayBuffer;
+}
+export function create(file: CreateFileProps): File {
   return new File([file.file], file.name, {
     type: file.type,
     lastModified: file.created_at.valueOf(),
