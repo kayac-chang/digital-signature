@@ -1,93 +1,67 @@
-import createStore from "~/utils/store";
+import Konva from "konva";
+import { KonvaEventObject } from "konva/lib/Node";
 
-type Vec2 = {
-  x: number;
-  y: number;
+type DrawProps = {
+  container: HTMLDivElement;
+  setHasDraw: (flag: boolean) => void;
 };
-type State =
-  | {
-      status: "pending";
-    }
-  | {
-      status: "drawing";
-      position: Vec2;
-    };
+function draw({ container, setHasDraw }: DrawProps) {
+  const { width, height } = container.getBoundingClientRect();
 
-type Action =
-  | {
-      type: "pointerstart";
-      position: Vec2;
-    }
-  | {
-      type: "pointerend";
-    }
-  | {
-      type: "pointermove";
-      position: Vec2;
-    };
+  const stage = new Konva.Stage({
+    container,
+    width,
+    height,
+  });
 
-const initial: State = {
-  status: "pending",
-};
-function drawReducer(state: State, action: Action): State {
-  if (action.type === "pointerstart") {
-    return { status: "drawing", position: action.position };
-  }
-  if (state.status === "drawing" && action.type === "pointermove") {
-    return { status: "drawing", position: action.position };
-  }
-  if (action.type === "pointerend") {
-    return { status: "pending" };
-  }
-  return state;
-}
+  const layer = new Konva.Layer();
+  stage.add(layer);
 
-type DropProps<Context> = {
-  getPosition: () => Vec2 | undefined | null;
-  createContext: () => Context;
-};
-function draw<Context>({ getPosition, createContext }: DropProps<Context>) {
-  const store = createStore(drawReducer, initial);
+  let isPaint = false;
+  let line: Konva.Line;
 
-  let context: Context | undefined;
+  function pointerdown() {
+    isPaint = true;
 
-  function onPointerStart() {
-    const position = getPosition();
-    if (!position) return;
-    store.dispatch({
-      type: "pointerstart",
-      position,
+    const pos = stage.getPointerPosition();
+    if (!pos) return;
+
+    line = new Konva.Line({
+      stroke: "#df4b26",
+      strokeWidth: 5,
+      globalCompositeOperation: "source-over",
+      lineCap: "round",
+      lineJoin: "round",
+      points: [pos.x, pos.y, pos.x, pos.y],
     });
-    context = createContext();
+    layer.add(line);
+
+    setHasDraw(true);
   }
-  function onPointerEnd() {
-    store.dispatch({ type: "pointerend" });
-    context = undefined;
+  function pointerup() {
+    isPaint = false;
   }
-  function onPointerMove() {
-    const position = getPosition();
-    position &&
-      store.dispatch({
-        type: "pointermove",
-        position,
-      });
+  function pointermove(e: KonvaEventObject<MouseEvent | TouchEvent>) {
+    if (!isPaint) return;
+    e.evt.preventDefault();
+
+    const pos = stage.getPointerPosition();
+    if (!pos) return;
+    const newPoints = line.points().concat([pos.x, pos.y]);
+    line.points(newPoints);
   }
 
-  type UpdateArg = {
-    state: State;
-    context: Context;
-  };
-  type UpdateFn = (arg: UpdateArg) => void;
-  function update(fn: UpdateFn) {
-    store.subscribe(() => {
-      if (!context) return;
+  stage.on("mousedown touchstart", pointerdown);
+  stage.on("mouseup touchend", pointerup);
+  stage.on("mousemove touchmove", pointermove);
 
-      const state = store.getState();
-      fn({ state, context });
-    });
+  function cleanup() {
+    stage.off("mousedown touchstart", pointerdown);
+    stage.off("mouseup touchend", pointerup);
+    stage.off("mousemove touchmove", pointermove);
   }
 
-  return { update, onPointerStart, onPointerEnd, onPointerMove };
+  return { cleanup, stage };
 }
 
 export default draw;

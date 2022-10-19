@@ -6,4 +6,11 @@
 import type { DB } from "~/models/types";
 import Dexie from "dexie";
 
-export default new Dexie("test") as DB;
+const db = new Dexie("test") as DB;
+
+db.version(1).stores({
+  pdf: `id, name`,
+  signature: `id, name`,
+});
+
+export default db;

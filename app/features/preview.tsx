@@ -1,13 +1,14 @@
 import * as PDF from "~/models/pdf";
 import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
-import type { PDFDocumentProxy, PDFPageProxy } from "pdfjs-dist";
 import { toDataURL } from "~/utils/blob";
-import { prop, range } from "ramda";
 import { wrapForSuspense } from "~/utils/react";
+import { prop, range } from "ramda";
 import invariant from "tiny-invariant";
 import { useEffect, useRef } from "react";
-import type { RefObject } from "react";
 import { debounce } from "ts-debounce";
+import type { PDFDocumentProxy, PDFPageProxy } from "pdfjs-dist";
+import type { RefObject } from "react";
+import clsx from "clsx";
 
 GlobalWorkerOptions.workerSrc = require("pdfjs-dist/build/pdf.worker.entry");
 
@@ -71,11 +72,14 @@ function Canvas({ page }: CanvasProps) {
 
 type PreviewProps = {
   file: string;
+  className?: string;
 };
-function Preview({ file }: PreviewProps) {
+function Preview({ file, className }: PreviewProps) {
   const pages: PDFPageProxy[] = loadPages(file);
   return (
-    <ul className="mx-auto flex max-w-screen-md flex-col gap-8">
+    <ul
+      className={clsx("mx-auto flex max-w-screen-md flex-col gap-8", className)}
+    >
       {pages.map((page) => (
         <li key={file + page.pageNumber} className="m-1 border">
           <Canvas page={page} />

@@ -3,10 +3,6 @@ import { generateID, create } from "~/models/file";
 import db from "~/models/indexeddb";
 import type { PDF } from "~/models/types";
 
-db.version(1).stores({
-  pdf: `id, name`,
-});
-
 /**
  * insert one PDF into database
  * @param file PDF

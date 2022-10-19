@@ -3,10 +3,6 @@ import { create, generateID } from "~/models/file";
 import db from "~/models/indexeddb";
 import type { Signature } from "~/models/types";
 
-db.version(1).stores({
-  signature: `id, name`,
-});
-
 /**
  * insert one signature into database
  * @param file signature
