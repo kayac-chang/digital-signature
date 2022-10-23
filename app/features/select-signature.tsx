@@ -11,46 +11,52 @@ function createImage(src: string): Promise<HTMLImageElement> {
   );
 }
 
+function render(file: string) {
+  return async (container: HTMLDivElement | null) => {
+    if (!container) return;
+
+    const image = await createImage(file);
+
+    const width = image.width / 2;
+    const height = image.height / 2;
+
+    const stage = new Konva.Stage({
+      container,
+      width,
+      height,
+    });
+
+    const layer = new Konva.Layer();
+
+    layer.add(
+      new Konva.Image({
+        image,
+        width,
+        height,
+      })
+    );
+
+    stage.add(layer);
+  };
+}
+
 const getAllSignatures = wrapForSuspense(signature.getAll);
 
 function SelectSignature() {
-  const signatures = getAllSignatures();
+  const [signature1, signature2] = getAllSignatures();
   return (
-    <form
-      className={clsx("h-[18rem] w-[36rem]", "rounded bg-white p-4 shadow")}
-    >
+    <form className={clsx("rounded bg-white p-4 shadow")}>
       <div className="flex h-full flex-col">
-        {signatures.map((signature) => (
-          <div
-            className="flex-1 border"
-            key={signature.id}
-            ref={async (ref) => {
-              if (!ref) return;
-
-              const { width, height } = ref.getBoundingClientRect();
-
-              const stage = new Konva.Stage({
-                container: ref,
-                width,
-                height,
-              });
-
-              const layer = new Konva.Layer();
-
-              const image = await createImage(signature.file);
-
-              layer.add(
-                new Konva.Image({
-                  image,
-                  width: image.width,
-                  height: image.height,
-                })
-              );
-
-              stage.add(layer);
-            }}
-          />
-        ))}
+        <div
+          className="border"
+          key={signature1.id}
+          ref={render(signature1.file)}
+        />
+        <div
+          className="border"
+          key={signature1.id + "1"}
+          ref={render(signature1.file)}
+        />
       </div>
     </form>
   );
