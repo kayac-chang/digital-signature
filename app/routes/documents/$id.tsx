@@ -1,11 +1,31 @@
 import type { LoaderArgs } from "@remix-run/server-runtime";
 import { useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
 import { ClientOnly } from "remix-utils";
-
+import * as Dialog from "@radix-ui/react-dialog";
 const Preview = lazy(() => import("~/features/preview"));
-const SignatureModel = lazy(() => import("~/features/signature-modal"));
+// const CreateSignature = lazy(() => import("~/features/create-signature"));
+const SelectSignature = lazy(() => import("~/features/select-signature"));
+
+const trigger = "flex w-full border py-2 px-4";
+const overlay = "fixed inset-0 bg-slate-500/50";
+const content = "fixed inset-0 grid place-content-center";
+function Model() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Dialog.Root open={open} onOpenChange={setOpen}>
+      <Dialog.Trigger className={trigger}>Signature</Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay className={overlay} />;
+        <Dialog.Content className={content}>
+          <SelectSignature />
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
 
 export function loader({ params }: LoaderArgs) {
   invariant(params.id);
@@ -21,7 +41,7 @@ function Route() {
           <menu>
             <li>
               <Suspense>
-                <SignatureModel />
+                <Model />
               </Suspense>
             </li>
           </menu>

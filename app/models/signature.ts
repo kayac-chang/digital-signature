@@ -1,21 +1,21 @@
-import { toArrayBuffer } from "~/utils/blob";
-import { create, generateID } from "~/models/file";
 import db from "~/models/indexeddb";
 import type { Signature } from "~/models/types";
 
 /**
  * insert one signature into database
- * @param file signature
+ * @param url signature
  * @returns uuid
  */
-export async function insertOne(file: File): Promise<Signature["id"]> {
+export async function insertOne(url: string): Promise<Signature["id"]> {
   return db.signature.add({
-    id: await generateID(file),
-    type: file.type,
-    name: file.name,
-    file: await toArrayBuffer(file),
-    created_at: new Date(file.lastModified),
+    id: url,
+    file: url,
+    created_at: new Date(),
   });
+}
+
+export async function getAll(): Promise<Signature[]> {
+  return db.signature.toArray();
 }
 
 export async function getByID(id: string): Promise<Signature> {
@@ -23,7 +23,5 @@ export async function getByID(id: string): Promise<Signature> {
 
   if (!found) throw new Error(`${id} doesn't exist in signature repository`);
 
-  const file = create(found);
-
-  return { ...found, file };
+  return found;
 }

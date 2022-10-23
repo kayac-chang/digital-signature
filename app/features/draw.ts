@@ -1,19 +1,7 @@
 import Konva from "konva";
-import { KonvaEventObject } from "konva/lib/Node";
+import type { KonvaEventObject } from "konva/lib/Node";
 
-type DrawProps = {
-  container: HTMLDivElement;
-  setHasDraw: (flag: boolean) => void;
-};
-function draw({ container, setHasDraw }: DrawProps) {
-  const { width, height } = container.getBoundingClientRect();
-
-  const stage = new Konva.Stage({
-    container,
-    width,
-    height,
-  });
-
+function draw(stage: Konva.Stage) {
   const layer = new Konva.Layer();
   stage.add(layer);
 
@@ -35,8 +23,6 @@ function draw({ container, setHasDraw }: DrawProps) {
       points: [pos.x, pos.y, pos.x, pos.y],
     });
     layer.add(line);
-
-    setHasDraw(true);
   }
   function pointerup() {
     isPaint = false;
@@ -61,7 +47,7 @@ function draw({ container, setHasDraw }: DrawProps) {
     stage.off("mousemove touchmove", pointermove);
   }
 
-  return { cleanup, stage };
+  return cleanup;
 }
 
 export default draw;
