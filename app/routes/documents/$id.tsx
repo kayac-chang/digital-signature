@@ -4,6 +4,7 @@ import invariant from "tiny-invariant";
 import { lazy, Suspense, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { ClientOnly } from "remix-utils";
+import { createImage } from "~/utils/image";
 const Preview = lazy(() => import("~/features/preview"));
 // const CreateSignature = lazy(() => import("~/features/create-signature"));
 const SelectSignature = lazy(() => import("~/features/select-signature"));
@@ -42,7 +43,15 @@ export function loader({ params }: LoaderArgs) {
 function Route() {
   const id = useLoaderData<typeof loader>();
   const [selectedSignature, setSelectedSignature] = useState<string>();
-  console.log(selectedSignature);
+
+  async function onPointerStart(
+    render: (image: HTMLImageElement) => Promise<void> | void
+  ) {
+    if (!selectedSignature) return;
+    render(await createImage(selectedSignature));
+    setSelectedSignature(undefined);
+  }
+
   return (
     <ClientOnly>
       {() => (
@@ -58,7 +67,11 @@ function Route() {
           </div>
           <div className="flex-[5] border">
             <Suspense>
-              <Preview className="mx-auto max-w-screen-lg" file={id} />
+              <Preview
+                className="mx-auto max-w-screen-lg"
+                file={id}
+                onPointerStart={onPointerStart}
+              />
             </Suspense>
           </div>
         </main>

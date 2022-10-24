@@ -4,14 +4,7 @@ import { FormEvent, useState } from "react";
 import invariant from "tiny-invariant";
 import * as signature from "~/models/signature";
 import { wrapForSuspense } from "~/utils/react";
-
-function createImage(src: string): Promise<HTMLImageElement> {
-  const image = new Image();
-  image.src = src;
-  return new Promise((resolve) =>
-    image.addEventListener("load", () => resolve(image))
-  );
-}
+import { createImage } from "~/utils/image";
 
 function render(file: string) {
   return async (container: HTMLDivElement | null) => {
