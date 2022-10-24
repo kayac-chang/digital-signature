@@ -1,5 +1,7 @@
 import clsx from "clsx";
 import Konva from "konva";
+import { FormEvent, useState } from "react";
+import invariant from "tiny-invariant";
 import * as signature from "~/models/signature";
 import { wrapForSuspense } from "~/utils/react";
 
@@ -42,22 +44,50 @@ function render(file: string) {
 
 const getAllSignatures = wrapForSuspense(signature.getAll);
 
-function SelectSignature() {
+type SelectSignatureProps = {
+  onSubmit?: (selected: string) => void;
+};
+function SelectSignature(props: SelectSignatureProps) {
   const [signature1, signature2] = getAllSignatures();
+  const [selected, setSelected] = useState<string>();
+
+  function onChange(event: FormEvent) {
+    invariant(event.target instanceof HTMLInputElement);
+    setSelected(event.target.value);
+  }
+
+  function onSubmit() {
+    selected && props.onSubmit?.(selected);
+  }
+
   return (
-    <form className={clsx("rounded bg-white p-4 shadow")}>
-      <div className="flex h-full flex-col">
-        <div
-          className="border"
-          key={signature1.id}
-          ref={render(signature1.file)}
-        />
-        <div
-          className="border"
-          key={signature1.id + "1"}
-          ref={render(signature1.file)}
-        />
+    <form
+      onChangeCapture={onChange}
+      onSubmit={onSubmit}
+      className={clsx("h-[16rem] w-[28rem]", "rounded bg-white p-4 shadow")}
+    >
+      <div className="flex flex-1 flex-col">
+        {[signature1, signature2].map((signature, index) =>
+          signature ? (
+            <label className="relative border" key={signature.id}>
+              <input
+                type="checkbox"
+                name="select-signature"
+                className="peer hidden"
+                value={signature.id}
+              />
+              <div ref={render(signature.file)} />
+              <div className="absolute inset-0 hidden bg-blue-500/20 peer-checked:block" />
+            </label>
+          ) : (
+            <button key={index} className="border">
+              create signature
+            </button>
+          )
+        )}
       </div>
+
+      <div>{selected && <button>submit</button>}</div>
     </form>
   );
 }

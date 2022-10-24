@@ -11,16 +11,23 @@ const SelectSignature = lazy(() => import("~/features/select-signature"));
 const trigger = "flex w-full border py-2 px-4";
 const overlay = "fixed inset-0 bg-slate-500/50";
 const content = "fixed inset-0 grid place-content-center";
-function Model() {
-  const [open, setOpen] = useState(false);
 
+type ModelProps = {
+  onSelected?: (selected: string) => void;
+};
+function Model(props: ModelProps) {
+  const [open, setOpen] = useState(false);
+  function onSelected(selected: string) {
+    props.onSelected?.(selected);
+    setOpen(false);
+  }
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger className={trigger}>Signature</Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className={overlay} />;
         <Dialog.Content className={content}>
-          <SelectSignature />
+          <SelectSignature onSubmit={onSelected} />
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
@@ -34,6 +41,8 @@ export function loader({ params }: LoaderArgs) {
 
 function Route() {
   const id = useLoaderData<typeof loader>();
+  const [selectedSignature, setSelectedSignature] = useState<string>();
+  console.log(selectedSignature);
   return (
     <ClientOnly>
       {() => (
@@ -42,7 +51,7 @@ function Route() {
             <menu>
               <li>
                 <Suspense>
-                  <Model />
+                  <Model onSelected={setSelectedSignature} />
                 </Suspense>
               </li>
             </menu>
